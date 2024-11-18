@@ -1,6 +1,18 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+const uriDb = process.env.MONGO_URI;
+
+mongoose
+  .connect(uriDb)
+  .then(() => console.log("Database connection successful"))
+  .catch((err) => {
+    console.error("Database connection error:", err);
+    process.exit(1);
+  });
 
 const contactsRouter = require("./routes/api/contacts");
 

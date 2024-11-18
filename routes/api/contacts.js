@@ -1,7 +1,29 @@
+// let listContacts = require("../../models/contacts.json");
 const { v4: uuidv4 } = require("uuid");
 const Joi = require("joi");
 const express = require("express");
-let listContacts = require("../../models/contacts.json");
+const mongoose = require("mongoose");
+
+const { Schema } = mongoose;
+
+const contactsSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "Set name for contact"],
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const Contact = mongoose.model("Contact", contactsSchema);
 
 const schema = Joi.object({
   name: Joi.string()
@@ -91,6 +113,34 @@ router.put("/:contactId", async (req, res, next) => {
     existingContact.name = name;
     existingContact.email = email;
     existingContact.phone = phone;
+    res.status(200).json(existingContact);
+  }
+});
+
+router.patch("/:contactId/favourite", async (req, res, next) => {
+  const { error, value } = schema.validate(req.body);
+  if (error) {
+    res.status(400).json({ message: "Missing fields", error: error.details });
+    return;
+  }
+  const { name, email, phone, favourite } = value;
+  const { contactId } = req.params;
+  const existingContact = listContacts.find(
+    (contact) => contact.id === contactId
+  );
+  if (!existingContact) {
+    res.status(404).json({ message: "Contact not found" });
+    return;
+  }
+  if (!favourite) {
+    res.status(400).json({ message: "Missing field favorite" });
+    return;
+  }
+  if (existingContact) {
+    existingContact.name = name;
+    existingContact.email = email;
+    existingContact.phone = phone;
+    existingContact.favourite = favourite;
     res.status(200).json(existingContact);
   }
 });
