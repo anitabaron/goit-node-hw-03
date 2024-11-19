@@ -1,5 +1,5 @@
 // let listContacts = require("../../models/contacts.json");
-// const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 // const Joi = require("joi");
 const express = require("express");
 const {
@@ -9,6 +9,7 @@ const {
   updateContact,
   removeContact,
 } = require("../../service/contactService");
+const Contact = require("../../models/schema");
 
 // const schema = Joi.object({
 //   name: Joi.string()
@@ -39,21 +40,30 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
-    const contacts = await getContactById(id);
-    res.status(200).json(contacts);
+    const contact = await getContactById(id);
+    if (!contact) {
+      return res.status(404).json({
+        message: "Contact not found.",
+      });
+    }
+    res.status(200).json(contact);
   } catch (error) {
     next(error);
   }
 });
-//   const contact = listContacts.find((contact) => contact.id === id);
-//   if (!contact) {
-//     res.status(404).json({
-//       message: "Contact not found.",
-//     });
-//   } else {
-//     res.status(200).json(contact);
-//   }
-// });
+
+router.post("/", async (req, res, next) => {
+  try {
+    const { name, email, phone, favourite } = req.body;
+    const newContact = await addContact({ name, email, phone, favourite });
+    res.status(201).json({
+      message: "Contact created",
+      contact: newContact,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // router.post("/", async (req, res, next) => {
 //   const { error, value } = schema.validate(req.body);
@@ -73,12 +83,13 @@ router.get("/:contactId", async (req, res, next) => {
 //   }
 // });
 
-router.get("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
     let contacts = await removeContact(id);
-    const filtredContacts = contacts.filter((contact) => contact.id !== id);
-    contacts = [...filtredContacts];
+    if (!id) {
+      res.status(404).json({ message: "Id is required to delete contact" });
+    }
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {
     next(error);

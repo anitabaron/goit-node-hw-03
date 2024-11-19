@@ -10,7 +10,7 @@ const getContactById = async (contactId) => {
 };
 
 const addContact = async (body) => {
-  return await Contact.create({ body });
+  return await Contact.create(body);
 };
 
 const updateContact = async (contactId, body) => {
@@ -20,7 +20,7 @@ const updateContact = async (contactId, body) => {
 };
 
 const removeContact = async (contactId) => {
-  return await Contact.findByIdAndRemove({ _id: contactId });
+  return await Contact.findByIdAndDelete({ _id: contactId });
 };
 
 module.exports = {
