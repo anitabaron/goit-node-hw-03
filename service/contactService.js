@@ -1,4 +1,3 @@
-// const fs = require('fs/promises')
 const Contact = require("../models/schema");
 
 const getAllContacts = async () => {

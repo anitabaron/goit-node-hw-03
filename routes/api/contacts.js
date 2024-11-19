@@ -28,6 +28,9 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const contacts = await getAllContacts();
+    if (!contacts.length) {
+      return res.status(404).json({ message: "No contacts found." });
+    }
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
@@ -37,6 +40,9 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid contact ID format." });
+    }
     const contact = await getContactById(id);
     if (!contact) {
       return res.status(404).json({
@@ -52,6 +58,9 @@ router.get("/:contactId", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const { name, email, phone, favorite } = req.body;
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
     const newContact = await addContact({ name, email, phone, favorite });
     res.status(201).json({
       message: "Contact created",
@@ -65,9 +74,15 @@ router.post("/", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
-    await removeContact(id);
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid contact ID format." });
+    }
     if (!id) {
       res.status(404).json({ message: "Id is required to delete contact" });
+    }
+    const deletedContact = await removeContact(id);
+    if (!deletedContact) {
+      return res.status(404).json({ message: "Contact not found." });
     }
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {
@@ -79,13 +94,24 @@ router.put("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
     const { name, email, phone, favorite } = req.body;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid contact ID format." });
+    }
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        message: "Missing required fields.",
+      });
+    }
     const updatedContact = await updateContact(id, {
       name,
       email,
       phone,
       favorite,
     });
-    res.status(201).json({
+    if (!updatedContact) {
+      return res.status(404).json({ message: "Contact not found." });
+    }
+    res.status(200).json({
       message: "Contact updated",
       contact: updatedContact,
     });
@@ -97,6 +123,9 @@ router.put("/:contactId", async (req, res, next) => {
 router.patch("/:contactId/favorite", async (req, res, next) => {
   try {
     const id = req.params.contactId;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid contact ID format." });
+    }
     const { favorite } = req.body;
     if (favorite === undefined) {
       return res.status(400).json({ message: "Missing field favorite" });
@@ -104,13 +133,13 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
     const updatedContact = await updateContact(id, {
       favorite,
     });
-    res.status(201).json({
-      message: "Contact updated",
-      contact: updatedContact,
-    });
     if (!updatedContact) {
       return res.status(404).json({ message: "Contact not found" });
     }
+    res.status(200).json({
+      message: "Contact updated",
+      contact: updatedContact,
+    });
   } catch (error) {
     next(error);
   }

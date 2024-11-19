@@ -9,12 +9,12 @@ const contactsSchema = new Schema({
   },
   email: {
     type: String,
-    // required: true,
+    required: true,
     match: [/.+@.+\..+/, "Please use a valid email address"],
   },
   phone: {
     type: String,
-    // required: true,
+    required: true,
   },
   favorite: {
     type: Boolean,
