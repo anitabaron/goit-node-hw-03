@@ -21,6 +21,7 @@ const {
 //     })
 //     .required(),
 //   phone: Joi.number().integer().required(),
+// favorite: Joi.boolean()
 // });
 
 const router = express.Router();

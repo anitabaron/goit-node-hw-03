@@ -1,29 +1,20 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
-const mongoose = require("mongoose");
-require("dotenv").config();
+const connectDB = require("./db");
 
 const app = express();
 
-const uriDb = process.env.MONGO_URI;
-mongoose
-  .connect(uriDb)
-  .then(() => console.log("Database connection successful"))
-  .catch((err) => {
-    console.error("Database connection error:", err);
-    process.exit(1);
-  });
+connectDB();
 
 app.use(express.json());
+app.use(cors());
 
 const contactsRouter = require("./routes/api/contacts");
 app.use("/api/contacts", contactsRouter);
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
-
-app.use(cors());
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });

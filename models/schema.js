@@ -5,6 +5,8 @@ const { Schema } = mongoose;
 const contactsSchema = new Schema({
   name: {
     type: String,
+    minlength: 2,
+    maxlength: 40,
     required: [true, "Set name for contact"],
   },
   email: {
